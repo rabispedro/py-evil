@@ -4,6 +4,7 @@ import requests
 from requests import Response
 from time import gmtime, sleep, strftime
 from typing import Optional
+import os
 
 BASE_URL: str = "https://www.residentevildatabase.com"
 HEADERS: dict = {
@@ -16,7 +17,7 @@ HEADERS: dict = {
 	'Sec-Fetch-Mode': 'cors',
 	'Sec-Fetch-Site': 'cross-site',
 }
-POOLING_SECONDS: float = 2
+POOLING_SECONDS: float = 0.875
 
 def extract_characters_list() -> list[str]:
 	characters: list[str] = []
@@ -71,8 +72,13 @@ def save_to_file(data: dict, path: str, name: str) -> None:
 	today: str = strftime("%m-%d-%Y", gmtime())
 	now: str = strftime("%H:%M:%S", gmtime())
 
-	complete_path: str = (path + "/" + today)
-	complete_file_name: str = (complete_path + "/" + now + "-" + name)
+	file_name: str = (now + "-" + name)
+
+	complete_path: str = os.path.join(path, today)
+	complete_file_name: str = os.path.join(complete_path, file_name)
+
+	if not os.path.exists(complete_path):
+		os.makedirs(complete_path, exist_ok=True)
 
 	try:
 		data_frame: pandas.DataFrame = pandas.DataFrame(data)
@@ -93,4 +99,4 @@ if __name__ == "__main__":
 		sleep(POOLING_SECONDS)
 		infos[character] = extract_characters_info(character)
 
-	save_to_file(infos, "./data", "output")
+	save_to_file(infos, "data", "result")
